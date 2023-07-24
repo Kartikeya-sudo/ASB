@@ -15,9 +15,7 @@ typedef struct {
     char* path;
 } Url;
 
-Url*
-parse_url(char* string)
-{
+Url* parse_url(char* string) {
     Url* result = (Url*) malloc(sizeof (Url)); // Heap allocate Url
     char* p = string; // Pointer to the given string
 
@@ -75,9 +73,7 @@ parse_url(char* string)
     return result;
 }
 
-int
-main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
     int status, sockfd;
     struct addrinfo hints;
     struct addrinfo* servinfo, *p;
