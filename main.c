@@ -17,6 +17,46 @@ typedef struct {
     char* path;
 } Url;
 
+typedef struct {
+    char* response; // The response string
+    size_t used; // The memory used
+    size_t size; // The total memory
+} Response;
+
+Response* initResponse(size_t initialSize) {
+    Response* resp = (Response*) malloc(sizeof(Response));
+
+    resp->response = (char*) malloc(initialSize * sizeof(char));
+    resp->used = 0;
+    resp->size = initialSize;
+
+    return resp;
+}
+
+void insertString(Response* resp, char* newString) {
+    // The total required size is greater than the memory available
+    // The extra 1 is for \0 to signify a string
+    if (resp->used + (strlen(newString)) + 1 >= resp->size) {
+        resp->size += strlen(newString) + 1;
+        resp->response = realloc(resp->response, resp->size * (sizeof (char)));
+    }
+
+    memcpy(resp->response + resp->used, newString, strlen(newString));
+    resp->used += strlen(newString);
+
+    return ;
+}
+
+void freeResponse(Response* resp) {
+    free(resp->response);
+    resp->response = NULL;
+    resp->size = 0;
+    resp->used = 0;
+
+    free(resp);
+    return ;
+}
+
 Url* parse_url(char* string) {
     Url* result = (Url*) malloc(sizeof (Url)); // Heap allocate Url
     char* p = string; // Pointer to the given string
@@ -175,7 +215,7 @@ void http(Url* url) {
 void https(Url* url) {
     struct tls_config* config = tls_config_new(); // Initializes, allocates and returns a tls config
 
-    const char* root_ca = tls_default_ca_cert_file();
+    const char* root_ca = tls_default_ca_cert_file(); // Returns the path to the default root cert
     tls_config_set_ca_file(config, root_ca); // Sets the root certificate
 
     printf("Certificates: %s\n", root_ca);
@@ -214,10 +254,12 @@ void https(Url* url) {
 
     printf("Request sent\n");
 
-    int nbytes = 0;
-    char buf[MAXDATA];
+    Response* response = initResponse(MAXDATA);
 
     while (true) {
+        char buf[MAXDATA];
+        int nbytes = 0;
+
         nbytes = tls_read(conn, buf, MAXDATA - 1);
 
         if (nbytes == TLS_WANT_POLLIN || nbytes == TLS_WANT_POLLOUT) {
@@ -231,10 +273,12 @@ void https(Url* url) {
 
         if (nbytes == 0) break;
 
-        buf[nbytes] = '\0';
-        printf("%s", buf);
-        memset(buf, 0, nbytes);
+        buf[nbytes] = '\0'; // Marks as a string
+        insertString(response, buf);
     }
+    printf("%s", response->response);
+
+    freeResponse(response);
 
 
     tls_close(conn);
