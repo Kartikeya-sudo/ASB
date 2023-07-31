@@ -212,6 +212,25 @@ void http(Url* url) {
     return ;
 }
 
+void html_parser(char* response) {
+    char* pointer = response;
+
+    bool in_tag = false;
+    while (*pointer != '<') pointer++;
+
+    while (pointer != NULL && *pointer != '\0') {
+        if (*pointer == '<') in_tag = true;
+
+        else if (*pointer == '>') in_tag = false;
+
+        else {
+            if (in_tag == false) printf("%c", *pointer);
+        }
+
+        pointer++;
+    }
+}
+
 void https(Url* url) {
     struct tls_config* config = tls_config_new(); // Initializes, allocates and returns a tls config
 
@@ -276,7 +295,8 @@ void https(Url* url) {
         buf[nbytes] = '\0'; // Marks as a string
         insertString(response, buf);
     }
-    printf("%s", response->response);
+    //printf("%s", response->response);
+    html_parser(response->response);
 
     freeResponse(response);
 
@@ -291,6 +311,7 @@ void https(Url* url) {
 
     return ;
 }
+
 
 int main(int argc, char* argv[]) {
 
