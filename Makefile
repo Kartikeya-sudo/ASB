@@ -2,10 +2,10 @@ CC = gcc
 CFLAGS = -Wextra -Wall -Werror -pedantic -I/usr/local/include/ -L/usr/local/lib/ -ltls
 
 object = browse
-source = main
+sources = main prot/https prot/http parser/html structs/response structs/url
 
 all:
-	$(CC) $(CFLAGS) $(source).c -o $(object)
+	$(CC) $(CFLAGS) $(foreach source, $(sources), $(source).c) -o $(object)
 
 test:
 	./$(object) https://example.org/
