@@ -11,7 +11,6 @@
 
 #define MAXDATA 500
 
-#include "../structs/response.h"
 #include "../structs/url.h"
 
 #include "../parser/html.h"

@@ -42,13 +42,20 @@ void https(Url* url) {
 
     printf("Request sent\n");
 
-    Response* response = initResponse(MAXDATA);
+    //Response* response = initResponse();
 
+    char* new_string = calloc(MAXDATA, sizeof(char));
+    if (new_string == NULL) {
+        fprintf(stderr, "Error allocating space for string\n");
+        exit(1);
+    }
+    int available = MAXDATA;
+    int curr_size = 0;
     while (true) {
-        char buf[MAXDATA];
+        char read[MAXDATA];
         int nbytes = 0;
 
-        nbytes = tls_read(conn, buf, MAXDATA - 1);
+        nbytes = tls_read(conn, read, MAXDATA - 1);
 
         if (nbytes == TLS_WANT_POLLIN || nbytes == TLS_WANT_POLLOUT) {
             continue;
@@ -61,14 +68,27 @@ void https(Url* url) {
 
         if (nbytes == 0) break;
 
-        buf[nbytes] = '\0'; // Marks as a string
-        insertString(response, buf);
+        read[nbytes] = '\0'; // Marks as a string
+
+        if (available < nbytes) {
+            new_string = realloc(new_string, curr_size + available + (nbytes - available + 1));
+            if (new_string == NULL) {
+                fprintf(stderr, "Error reallocating space for string\n");
+                exit(1);
+            }
+            available += (nbytes - available + 1);
+        }
+
+        strncat(new_string, read, nbytes);
+        curr_size += nbytes;
+        available -= nbytes;
+
     }
-    //printf("%s", response->response);
-    html_parser(response->response);
+    html_parser(new_string);
 
-    freeResponse(response);
+    new_string[curr_size + 1] = '\0';
 
+    free(new_string);
 
     tls_close(conn);
 
@@ -77,6 +97,7 @@ void https(Url* url) {
     tls_free(conn);
 
     tls_config_free(config);
+
 
     return ;
 }
