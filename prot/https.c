@@ -42,8 +42,6 @@ void https(Url* url) {
 
     printf("Request sent\n");
 
-    //Response* response = initResponse();
-
     char* new_string = calloc(MAXDATA, sizeof(char));
     if (new_string == NULL) {
         fprintf(stderr, "Error allocating space for string\n");
@@ -84,9 +82,10 @@ void https(Url* url) {
         available -= nbytes;
 
     }
-    html_parser(new_string);
 
     new_string[curr_size + 1] = '\0';
+    html_parser(new_string);
+
 
     free(new_string);
 
