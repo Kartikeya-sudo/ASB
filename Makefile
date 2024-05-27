@@ -5,7 +5,7 @@ object = browse
 sources = main prot/https prot/http parser/html structs/url
 
 all:
-	$(CC) $(CFLAGS) $(foreach source, $(sources), $(source).c) -o $(object)
+	$(CC) $(foreach source, $(sources), $(source).c) -o $(object) $(CFLAGS) 
 
 test:
 	./$(object) https://example.org/
